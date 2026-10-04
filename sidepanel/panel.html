@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="panel.css" />
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <span class="logo-dot"></span>
+      <span>WebPilot AI</span>
+    </div>
+    <div class="header-actions">
+      <span id="modelBadge" class="model-badge" title="当前模型">未配置</span>
+      <button id="settingsBtn" class="icon-btn" title="设置">⚙</button>
+    </div>
+  </header>
+
+  <main id="chat"></main>
+
+  <div id="askBar" class="ask-bar hidden">
+    <div id="askQuestion" class="ask-question"></div>
+    <div class="ask-actions">
+      <input id="askInput" placeholder="输入回答…" />
+      <button id="askSend">回复</button>
+    </div>
+  </div>
+
+  <footer>
+    <div id="statusRow">
+      <span id="status" class="status"></span>
+      <button id="stopBtn" class="stop hidden">⏹ 停止</button>
+    </div>
+    <div class="input-row">
+      <textarea id="taskInput" rows="2" placeholder="描述任务，如：在这个页面找到最便宜的机票并告诉我价格"></textarea>
+      <button id="runBtn">▶</button>
+    </div>
+    <div class="quick-row">
+      <button class="quick" data-task="总结这个网页的主要内容">📋 总结本页</button>
+      <button class="quick" data-task="把当前页面里的联系方式（邮箱、电话）找出来">🔍 找联系方式</button>
+      <button class="quick" data-task="打开 https://www.bing.com，搜索今日科技新闻，给我前3条的标题和链接">🌐 搜索新闻</button>
+    </div>
+  </footer>
+
+  <script src="panel.js" type="module"></script>
+</body>
+</html>

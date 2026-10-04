@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>WebPilot AI 设置</title>
+  <style>
+    :root { --accent: #7c5cff; --border: #e3e6ee; --text: #1a1d26; --muted: #6b7280; }
+    * { box-sizing: border-box; }
+    body {
+      max-width: 640px; margin: 0 auto; padding: 32px 24px;
+      font: 14px/1.6 -apple-system, "PingFang SC", "Segoe UI", sans-serif;
+      color: var(--text); background: #f7f8fb;
+    }
+    h1 { font-size: 20px; margin-bottom: 4px; }
+    .sub { color: var(--muted); margin-bottom: 28px; }
+    .card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+    label { display: block; font-weight: 600; margin: 14px 0 6px; }
+    label:first-child { margin-top: 0; }
+    input[type="text"], input[type="password"], input[type="number"], select, textarea {
+      width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px;
+      font: inherit; outline: none; background: #fff;
+    }
+    input:focus, textarea:focus { border-color: var(--accent); }
+    .hint { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .row { display: flex; gap: 8px; align-items: center; }
+    button {
+      background: var(--accent); color: #fff; border: none; border-radius: 8px;
+      padding: 8px 16px; cursor: pointer; font: inherit;
+    }
+    button.ghost { background: #fff; color: var(--text); border: 1px solid var(--border); }
+    .banner {
+      background: linear-gradient(135deg, rgba(124,92,255,.08), rgba(62,207,142,.08));
+      border: 1px solid rgba(124,92,255,.3); border-radius: 12px; padding: 14px 18px; margin-bottom: 16px;
+    }
+    .banner a { color: var(--accent); font-weight: 600; text-decoration: none; }
+    .save-row { display: flex; align-items: center; gap: 12px; margin-top: 20px; }
+    #saveTip { color: #16a34a; font-weight: 600; opacity: 0; transition: opacity .3s; }
+    #saveTip.show { opacity: 1; }
+    code { background: #f0f1f5; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+    .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+  </style>
+</head>
+<body>
+  <h1>⚙️ WebPilot AI 设置</h1>
+  <div class="sub">接入任意 OpenAI 兼容 API，驱动你的浏览器智能体</div>
+
+  <div class="banner">
+    💡 推荐使用 <a href="https://www.rqu.cn" target="_blank">Rqu AI</a>（本插件默认网关）：
+    一个 Key 即可调用 GPT / Claude / Gemini / DeepSeek / 通义千问等全部主流模型。
+    <a href="https://www.rqu.cn" target="_blank">前往注册获取 API Key →</a>
+  </div>
+
+  <div class="card">
+    <label>API 地址 (base_url)</label>
+    <input type="text" id="baseUrl" placeholder="https://api.rqu.cn/v1" />
+    <div class="hint">任何 OpenAI 兼容端点均可。官方 API 填 <code>https://api.openai.com/v1</code></div>
+
+    <label>API Key</label>
+    <input type="password" id="apiKey" placeholder="sk-..." />
+
+    <label>模型</label>
+    <div class="row">
+      <select id="model"><option value="">— 点击右侧按钮获取 —</option></select>
+      <button class="ghost" id="loadModels">获取模型列表</button>
+    </div>
+    <div class="hint">依赖模型调用工具（function calling），推荐 GPT-4o-mini / DeepSeek 等支持工具调用的模型</div>
+
+    <label>最大执行步数</label>
+    <input type="number" id="maxSteps" min="3" max="100" />
+    <div class="hint">单次任务最多进行的"模型决策-工具执行"循环次数</div>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="confirmDangerous" />
+      <label for="confirmDangerous" style="margin:0;font-weight:400">提交表单前需要我确认（推荐开启）</label>
+    </div>
+  </div>
+
+  <div class="card">
+    <label>🧩 技能库（Skills）</label>
+    <div class="hint" style="margin-bottom:10px">
+      技能 = 可安装的任务流程指令包。智能体完成任务后会自动把可复用流程沉淀为新技能（下方标记 🤖 的即自学产物），
+      也可以从 URL 或粘贴 JSON 安装社区技能。
+    </div>
+    <div id="skillList"></div>
+
+    <label style="margin-top:16px">从 URL 安装技能包</label>
+    <div class="row">
+      <input type="text" id="skillUrl" placeholder="https://…/skill.json （支持 webpilot-skill/v1 格式）" />
+      <button class="ghost" id="skillInstallUrl">安装</button>
+    </div>
+
+    <label>粘贴 JSON 安装</label>
+    <textarea id="skillJson" rows="4" placeholder='{
+  "format": "webpilot-skill/v1",
+  "name": "my-skill",
+  "title": "我的技能",
+  "instructions": "…流程指令…"
+}'></textarea>
+    <div class="row" style="margin-top:8px">
+      <button class="ghost" id="skillInstallJson">导入</button>
+      <button class="ghost" id="skillExport">导出全部技能</button>
+      <span id="skillTip" class="hint"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <label>MCP Servers（可选）</label>
+    <textarea id="mcpServers" rows="5" placeholder='[
+  { "name": "fetch", "url": "http://localhost:8931/mcp" }
+]'></textarea>
+    <div class="hint">
+      通过 <b>Streamable HTTP</b> 传输接入 MCP 服务器，其工具会自动注入智能体。
+      本地 stdio 型 server 需先经 <code>mcp-proxy</code> 等网关转为 HTTP。
+      格式为 JSON 数组：<code>[{name, url, headers?}]</code>
+    </div>
+  </div>
+
+  <div class="save-row">
+    <button id="save">保存设置</button>
+    <span id="saveTip">✓ 已保存</span>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

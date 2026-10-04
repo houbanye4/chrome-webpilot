@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "WebPilot AI - 浏览器智能体",
+  "version": "0.1.0",
+  "description": "接入 OpenAI 兼容 API（默认 Rqu AI）的浏览器智能体：自动浏览网页、填写表单、执行任务，支持 MCP 工具扩展。",
+  "permissions": ["tabs", "scripting", "storage", "sidePanel", "contextMenus", "activeTab"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "side_panel": {
+    "default_path": "sidepanel/panel.html"
+  },
+  "options_page": "options/options.html",
+  "action": {
+    "default_title": "打开 WebPilot AI 侧边栏"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [],
+  "web_accessible_resources": []
+}
