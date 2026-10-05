@@ -28,10 +28,36 @@ WebPilot 是一个 **ReAct 式智能体**：拿到任务后自主规划 → 观�
 - 🤖 **自主多步执行** — 基于 function calling 的智能体循环，平均 5~15 步完成一个网页任务
 - 👁️ **页面感知** — 把 DOM 序列化为带编号的元素清单（token 友好），模型"看得懂"页面结构
 - 🖱️ **真实操作** — 点击、输入（兼容 React 受控组件）、滚动、跳转、多标签页切换，操作时高亮目标元素
+- 🧩 **Skills 技能系统** — 可安装、可分享、可自学习的任务流程包（详见下文）
+- ⏱️ **自动化任务** — 定时把任务交给智能体无人值守执行：自动登录、签到、内容创作、社区互动
 - 🔌 **任意 OpenAI 兼容端点** — 官方 API 或任意聚合网关，改一个 URL 即可切换
-- 🧩 **MCP 支持** — 通过 Streamable HTTP 接入 MCP Server，外部工具自动注入智能体
+- 🌐 **MCP 支持** — 通过 Streamable HTTP 接入 MCP Server，外部工具自动注入智能体
 - 🛡️ **人在回路** — 登录/支付/提交表单等敏感动作默认弹窗向你确认；内置 `ask_user` 工具随时提问
 - 💬 **侧边栏可视化** — 每一步的模型思考、工具调用参数与结果全部展开可查
+
+## 🧩 Skills：会自己长大的技能库
+
+类似 Claude Code 的 skills 机制，但活在浏览器里。**技能 = 一份结构化的流程指令包**（`webpilot-skill/v1` JSON），启用后注入智能体的系统提示词，让它按特定套路干活。
+
+**三种获得技能的方式：**
+
+1. **出厂预置** — 深度调研 / 表单填写助手 / 比价猎手，装完即有；
+2. **安装社区技能** — 设置页粘贴 JSON 或填 URL 一键导入（支持技能合集包），可导出分享给任何人；
+3. **🤖 智能体自学** — 每次任务成功后，智能体自己判断流程是否有复用价值，主动调用 `save_skill` 沉淀为新技能。**跑的任务越多，它越懂你**——这是 WebPilot 和普通"套壳聊天"插件的本质区别。
+
+技能 JSON 长这样（欢迎给仓库提 PR 收录你的技能）：
+
+```json
+{
+  "format": "webpilot-skill/v1",
+  "name": "price-hunter",
+  "title": "比价猎手",
+  "description": "在电商/票务页面寻找最低价并给出对比表",
+  "instructions": "1. 打开至少 2 个可比价来源……",
+  "author": "you",
+  "version": "1.0"
+}
+```
 
 ## 🚀 5 分钟上手
 
@@ -57,19 +83,36 @@ Chrome 打开 `chrome://extensions` → 右上角开启 **开发者模式** → 
 
 回到侧边栏，输入任务，回车。🎬 看它干活。
 
-## 🧩 MCP：给智能体外挂工具
+## ⏱️ 自动化任务：让智能体自己上班
 
-WebPilot 内置 **MCP（Model Context Protocol）客户端**（Streamable HTTP 传输）。在设置页填入 MCP Server 配置，其工具会自动注入智能体：
+设置页「自动化任务」卡片中创建定时任务，触发时智能体在后台无人值守执行：
 
-```json
-[
-  { "name": "fetch", "url": "http://localhost:8931/mcp" },
-  { "name": "search", "url": "https://mcp.example.com/mcp", "headers": { "Authorization": "Bearer xxx" } }
-]
+- **触发方式**：每天定时 / 固定间隔 / 一次性，运行历史可查（最近 50 条）；
+- **自动登录**：凭据保存在「网站凭据」（仅存本机），智能体用 `fill_credential` 工具自动填写登录表单——**密码不经过模型对话内容**，且遇验证码/2FA 立即暂停请求你介入；
+- **无人值守安全机制**：发布/提交类操作在无人值守下默认自动拒绝；信息缺失时智能体采用保守方案或安全中止；
+- **内容创作**：配合「内容创作者」技能，可定时分析指定站点内容、生成文章/短评草稿，人在面板确认后再发布。
+
+```text
+示例：每天 09:00 ──▶ 打开行业热榜 ──▶ 分析内容 ──▶ 创作短评草稿 ──▶ 等你确认后发布
 ```
 
-> 本地 stdio 型 MCP Server（如官方 filesystem server）可通过 [`mcp-proxy`](https://github.com/sparfenyuk/mcp-proxy) 一行命令转为 HTTP：
-> `mcp-proxy --port 8931 -- npx -y @modelcontextprotocol/server-filesystem ~/Documents`
+**⚠️ 合规边界（重要）**：本项目的自动化能力面向**个人账号的效率提升**（管理自己的内容发布、签到、互动）。使用时请：
+1. 遵守目标网站的服务条款——多数平台对自动化发布有频率与内容要求；
+2. 单次任务发布不超过 3 条、内容原创（技能中已内置硬限制）；
+3. **不得**用于批量注册、垃圾评论群发、刷量等滥用行为——插件内置的确认与限频机制即为此设计。
+
+## 🌐 MCP：给智能体外挂工具
+
+WebPilot 内置 **MCP（Model Context Protocol）客户端**（Streamable HTTP 传输）。设置页的「MCP Servers」卡片中可视化添加：填名称 + 服务器 URL（可选自定义请求头），点 **「测试连接」** 即可验证并预览发现的工具数量与名称，状态实时显示在列表里。
+
+本地 stdio 型 server（如官方 filesystem server）用 [`mcp-proxy`](https://github.com/sparfenyuk/mcp-proxy) 一行命令转成 HTTP：
+
+```bash
+pip install mcp-proxy
+mcp-proxy --port 8931 -- npx -y @modelcontextprotocol/server-filesystem ~/Documents
+```
+
+然后在插件里添加 `http://localhost:8931/mcp` → 测试连接 → 显示"✓ N 个工具"即接入成功。
 
 接入后模型可直接调用 `mcp__fetch__fetch` 等工具，配合浏览器操作能力做更复杂的事——比如抓取本地文件内容填进网页表单。
 
@@ -107,6 +150,7 @@ WebPilot 内置 **MCP（Model Context Protocol）客户端**（Streamable HTTP �
 | `navigate {url}` / `open_tab` / `switch_tab` | 导航与多标签页管理 |
 | `find_in_page {query}` / `read_page_text` | 页内搜索 / 读全文 |
 | `ask_user {question}` | 人在回路：向用户提问并等待答复 |
+| `save_skill {name,title,instructions}` | 🧩 技能自学习：把可复用流程沉淀为技能 |
 | `done {summary}` | 任务完成汇报 |
 | `mcp__server__tool` | 所有已连接 MCP Server 的工具（自动注入） |
 

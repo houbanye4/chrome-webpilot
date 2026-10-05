@@ -76,6 +76,52 @@
   </div>
 
   <div class="card">
+    <label>⏱️ 自动化任务</label>
+    <div class="hint" style="margin-bottom:10px">
+      定时把任务交给智能体执行（无人值守）。发布/评论类操作默认会被安全机制拒绝——建议任务里写明"生成草稿"，
+      人在面板确认后再发。凭据登录请先在「网站凭据」中保存账号。
+    </div>
+    <div id="taskList"></div>
+
+    <label style="margin-top:16px">新建任务</label>
+    <div class="row" style="margin-bottom:8px">
+      <input type="text" id="taskName" placeholder="任务名称" style="flex:1" />
+      <select id="taskTriggerType" style="width:120px">
+        <option value="daily">每天定时</option>
+        <option value="interval">固定间隔</option>
+        <option value="once">一次性</option>
+      </select>
+      <input type="time" id="taskTime" value="09:00" style="width:110px" />
+      <input type="number" id="taskMinutes" value="60" min="1" style="width:90px" placeholder="分钟" />
+    </div>
+    <textarea id="taskPrompt" rows="3" placeholder="任务描述，例如：使用技能「内容创作者」，打开 xxx 网站分析今日热榜，写一篇 300 字的短评草稿（不要发布，等我确认）"></textarea>
+    <div class="row" style="margin-top:8px">
+      <button id="taskAdd">创建任务</button>
+      <span id="taskTip" class="hint"></span>
+    </div>
+    <label style="margin-top:16px">最近运行记录</label>
+    <div id="taskHistory" class="hint" style="max-height:140px;overflow-y:auto"></div>
+  </div>
+
+  <div class="card">
+    <label>🔑 网站凭据（保存在本机浏览器）</label>
+    <div class="hint" style="margin-bottom:10px">
+      供智能体自动登录<b>你自己的账号</b>使用。凭据仅存储在本机（chrome.storage.local），不会同步、不会上传。
+      请勿保存他人账号。支持平台验证码/2FA 时智能体会暂停并请求你介入。
+    </div>
+    <div id="credList"></div>
+    <label style="margin-top:12px">添加凭据</label>
+    <div class="row" style="margin-bottom:8px">
+      <input type="text" id="credSite" placeholder="站点名/关键词，如 jianshu" style="flex:1" />
+      <input type="text" id="credUser" placeholder="用户名/手机号/邮箱" style="flex:1" />
+    </div>
+    <div class="row">
+      <input type="password" id="credPass" placeholder="密码" style="flex:1" />
+      <button id="credAdd">保存</button>
+    </div>
+  </div>
+
+  <div class="card">
     <label>🧩 技能库（Skills）</label>
     <div class="hint" style="margin-bottom:10px">
       技能 = 可安装的任务流程指令包。智能体完成任务后会自动把可复用流程沉淀为新技能（下方标记 🤖 的即自学产物），
@@ -104,14 +150,23 @@
   </div>
 
   <div class="card">
-    <label>MCP Servers（可选）</label>
-    <textarea id="mcpServers" rows="5" placeholder='[
-  { "name": "fetch", "url": "http://localhost:8931/mcp" }
-]'></textarea>
-    <div class="hint">
-      通过 <b>Streamable HTTP</b> 传输接入 MCP 服务器，其工具会自动注入智能体。
-      本地 stdio 型 server 需先经 <code>mcp-proxy</code> 等网关转为 HTTP。
-      格式为 JSON 数组：<code>[{name, url, headers?}]</code>
+    <label>🌐 MCP Servers</label>
+    <div class="hint" style="margin-bottom:10px">
+      通过 <b>Streamable HTTP</b> 传输接入 MCP 服务器，其工具自动注入智能体（工具名前缀 <code>mcp__服务器名__</code>）。
+      本地 stdio 型 server 请先用 <code>mcp-proxy</code> 转成 HTTP（见项目 README）。
+    </div>
+    <div id="mcpList"></div>
+
+    <label style="margin-top:16px">添加服务器</label>
+    <div class="row" style="margin-bottom:8px">
+      <input type="text" id="mcpName" placeholder="名称，如 fetch（仅小写字母数字连字符）" style="flex:1" />
+      <input type="text" id="mcpUrl" placeholder="http://localhost:8931/mcp" style="flex:2" />
+    </div>
+    <textarea id="mcpHeaders" rows="2" placeholder='自定义请求头（可选，JSON 对象）：{ "Authorization": "Bearer xxx" }'></textarea>
+    <div class="row" style="margin-top:8px">
+      <button id="mcpAdd">添加</button>
+      <button class="ghost" id="mcpTest">测试连接</button>
+      <span id="mcpTip" class="hint"></span>
     </div>
   </div>
 

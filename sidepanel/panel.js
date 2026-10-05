@@ -93,6 +93,9 @@ port.onMessage.addListener((msg) => {
     case 'ask_user':
       showAsk(e.id, e.question);
       break;
+    case 'skill_saved':
+      addStepDivider(`🧩 新技能已学会：「${e.title}」（可在设置→技能库管理）`);
+      break;
     case 'final':
       addMsg('final', `✅ ${e.text}`);
       setRunning(false);

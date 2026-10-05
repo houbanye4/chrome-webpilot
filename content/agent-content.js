@@ -185,6 +185,18 @@
         case 'FIND':
           sendResponse(doFind(msg.query));
           return false;
+        case 'SUBMIT_FORM': {
+          const form = document.querySelector('form');
+          if (form && typeof form.requestSubmit === 'function') {
+            form.requestSubmit();
+            sendResponse({ ok: true });
+          } else {
+            const btn = document.querySelector('[type="submit"], button:not([type])');
+            if (btn) { btn.click(); sendResponse({ ok: true }); }
+            else sendResponse({ ok: false });
+          }
+          return false;
+        }
         case 'READ_TEXT':
           sendResponse({
             ok: true,
